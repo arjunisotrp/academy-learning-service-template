@@ -41,6 +41,7 @@ from packages.valory.skills.learning_abci.rounds import (
     SynchronizedData,
     TxPreparationRound,
 )
+import json
 
 
 HTTP_OK = 200
@@ -94,11 +95,21 @@ class APICheckBehaviour(LearningBaseBehaviour):  # pylint: disable=too-many-ance
         """Get token price from Coingecko"""
         # Interact with Coingecko's API
         # result = yield from self.get_http_response("coingecko.com")
-        yield
-        price = 1.0
-        self.context.logger.info(f"Price is {price}")
+        self.context.logger.info(f"Interact with Coingecko's API to get price")
+        result = yield from self.get_http_response(method="GET",
+                                                   url=self.params.coingecko_price_template,
+                                                   headers={
+                                                        "accept": "application/json",
+                                                        "x-cg-pro-api-key": self.params.coingecko_api_key})
+        if result.status_code == 200:
+            data = json.loads(result.body.decode('utf-8'))
+            price = data['autonolas']['usd']
+        else:
+            print("Failed to retrieve data, status code:", result.status_code)
+            price = 0
+        self.context.logger.info(f"result Price is {price}")
         return price
-
+        
     def get_balance(self):
         """Get balance"""
         # Use the contract api to interact with the ERC20 contract
