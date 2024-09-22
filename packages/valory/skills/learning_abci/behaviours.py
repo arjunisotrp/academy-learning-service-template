@@ -41,8 +41,12 @@ from packages.valory.skills.learning_abci.rounds import (
     SynchronizedData,
     TxPreparationRound,
 )
+from packages.valory.protocols.contract_api import ContractApiMessage
+from packages.valory.contracts.erc20.contract import ERC20
+from packages.valory.contracts.gnosis_safe.contract import GnosisSafeContract
+from packages.valory.skills.transaction_settlement_abci.payload_tools import (hash_payload_to_hex,)
 
-
+VAL_ETHER = 10**18
 HTTP_OK = 200
 GNOSIS_CHAIN_ID = "gnosis"
 TX_DATA = b"0x"
@@ -102,12 +106,25 @@ class APICheckBehaviour(LearningBaseBehaviour):  # pylint: disable=too-many-ance
     def get_balance(self):
         """Get balance"""
         # Use the contract api to interact with the ERC20 contract
-        # result = yield from self.get_contract_api_response()
-        yield
-        balance = 1.0
-        self.context.logger.info(f"Balance is {balance}")
-        return balance
+        result = yield from self.get_contract_api_response(
+            performative=ContractApiMessage.Performative.GET_RAW_TRANSACTION,
+            contract_address=self.params.contract_token_address,
+            contract_id=str(ERC20.contract_id),
+            contract_callable="check_balance",
+            account=self.synchronized_data.safe_contract_address,
+            chain_id=GNOSIS_CHAIN_ID,)
+        
+        if result.performative != ContractApiMessage.Performative.RAW_TRANSACTION:
+            self.context.logger.error(f"{result}..error in getting balance")
+            return False
+        wallet_balance = (result.raw_transaction.body.get("wallet",None))/10**18
+        token_balance = (result.raw_transaction.body.get("token",None))/10**8
 
+        self.context.logger.info(f"wallet : {wallet_balance}, token: {token_balance}")
+        #yield
+        #balance = 1.0
+        self.context.logger.info(f"Balance is {token_balance}")
+        return token_balance
 
 class DecisionMakingBehaviour(
     LearningBaseBehaviour
@@ -164,8 +181,28 @@ class TxPreparationBehaviour(
     def get_tx_hash(self):
         """Get the tx hash"""
         # We need to prepare a 1 wei transfer from the safe to another (configurable) account.
-        yield
-        tx_hash = None
+
+        #yield
+        #tx_hash = None
+        result = yield from self.get_contract_api_response(
+            performative=ContractApiMessage.Performative.GET_STATE,
+            contract_address=self.synchronized_data.safe_contract_address,
+            contract_id=str(GnosisSafeContract.contract_id),
+            contract_callable="get_raw_safe_transaction_hash",
+            to_address=self.params.transfer_target_address,
+            value=VAL_ETHER,
+            data=TX_DATA,
+            safe_tx_gas=SAFE_GAS,
+            chain_id=GNOSIS_CHAIN_ID
+        )
+
+        if result.performative != ContractApiMessage.Performative.STATE:
+            self.context.logger.error(f"{result}..error in getting hash")
+            return False
+        
+        tx_hash_data = cast(str,result.state.body["tx_hash"])
+        tx_hash = tx_hash_data[2:]
+
         self.context.logger.info(f"Transaction hash is {tx_hash}")
         return tx_hash
 
