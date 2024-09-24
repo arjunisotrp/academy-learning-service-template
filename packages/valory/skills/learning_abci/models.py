@@ -51,9 +51,6 @@ class Params(BaseParams):
             "coingecko_price_template", kwargs, str
         )
         self.coingecko_api_key = kwargs.get("coingecko_api_key", None)
-        self.contract_token_address = self._ensure(
-            "contract_token_address", kwargs, str
-        )
         self.transfer_target_address = self._ensure(
             "transfer_target_address", kwargs, str
         )

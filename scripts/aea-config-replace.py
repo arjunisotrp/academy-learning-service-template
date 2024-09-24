@@ -56,11 +56,6 @@ def main() -> None:
                 "safe_contract_address"
             ] = f"${{str:{os.getenv('SAFE_CONTRACT_ADDRESS')}}}"  # type: ignore
 
-        if os.getenv("CONTRACT_TOKEN_ADDRESS"):
-            config[-1]["models"]["params"]["args"]["setup"][
-                "contract_token_address"
-            ] = f"${{str:{os.getenv('CONTRACT_TOKEN_ADDRESS')}}}"  # type: ignore   
-
         if os.getenv("TRANSFER_TARGET_ADDRESS"):
             config[-1]["models"]["params"]["args"]["setup"][
                 "transfer_target_address"

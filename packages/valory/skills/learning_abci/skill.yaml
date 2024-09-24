@@ -7,11 +7,11 @@ license: Apache-2.0
 aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   __init__.py: bafybeiho3lkochqpmes4f235chq26oggmwnol3vjuvhosleoubbjirbwaq
-  behaviours.py: bafybeiftvwqswyygttdepi4uqf67zyppgxm7jeyjxf4hft3y7gp25bj3ji
+  behaviours.py: bafybeih7ppeppgynbtvwn3fgdwtnja3xm5hkti3br6i25jxplat7rvmobq
   dialogues.py: bafybeifqjbumctlffx2xvpga2kcenezhe47qhksvgmaylyp5ypwqgfar5u
   fsm_specification.yaml: bafybeicxvornc7gpvpotob6z46fl7qmataxydn22fr22qnb4ausfg6vppe
   handlers.py: bafybeigjadr4thz6hfpfx5abezbwnqhbxmachf4efasrn4z2vqhsqgnyvi
-  models.py: bafybeif7mxobbivm2wbvilzemyap2rtaide5f2i5a35tpautb63h4glsv4
+  models.py: bafybeidejxngr73igsjevawlbofno67q75btdnncojt7ma734nyohe7y74
   payloads.py: bafybeicfc54bmgft2nlwpykcxaqvrbjrhcdkdck2xt2kyou6u6lczoorfu
   rounds.py: bafybeif73latxgwatmslh34mrt3hgs762bhcusf4dyilxigqxwfmoou3dm
 fingerprint_ignore_patterns: []
@@ -127,7 +127,6 @@ models:
       coingecko_price_template: https://api.coingecko.com/api/v3/simple/price?ids=autonolas&vs_currencies=usd&x_cg_demo_api_key={api_key}
       coingecko_api_key: null
       transfer_target_address: '0x0000000000000000000000000000000000000000'
-      contract_token_address: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
     class_name: Params
   requests:
     args: {}
