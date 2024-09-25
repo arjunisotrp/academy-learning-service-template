@@ -106,8 +106,22 @@ class APICheckBehaviour(LearningBaseBehaviour):  # pylint: disable=too-many-ance
     def get_balance(self):
         """Get balance"""
         # Use the contract api to interact with the ERC20 contract
-        yield
-        balance = 1.0
+        result = yield from self.get_contract_api_response(
+            performative=ContractApiMessage.Performative.GET_RAW_TRANSACTION,
+            contract_address=self.params.contract_address,
+            contract_id=str(ERC20.contract_id),
+            contract_callable="check_balance",
+            account=self.synchronized_data.safe_contract_address,
+            chain_id=GNOSIS_CHAIN_ID,)
+        
+        if result.performative != ContractApiMessage.Performative.RAW_TRANSACTION:
+            self.context.logger.error(f"{result}..error in getting balance")
+            return False
+        wallet_balance = (result.raw_transaction.body.get("wallet",None))
+        token_balance = (result.raw_transaction.body.get("token",None))
+
+        self.context.logger.info(f"wallet : {wallet_balance}, token: {token_balance}")
+        balance = token_balance
         self.context.logger.info(f"Balance is {balance}")
         return balance
 
@@ -136,8 +150,11 @@ class DecisionMakingBehaviour(
         """Get the next event"""
         # Using the token price from the previous round, decide whether we should make a transfer or not
         #event = Event.DONE.value
-        event = Event.TRANSACT.value
-        self.context.logger.info(f"Event is {event}")
+        if self.synchronized_data.price > 0.5:
+            event = Event.DONE.value
+        else:
+            event = Event.TRANSACT.value
+            self.context.logger.info(f"Event is {event}.. Make a transfer")
         return event
 
 
