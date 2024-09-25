@@ -59,7 +59,12 @@ def main() -> None:
         if os.getenv("TRANSFER_TARGET_ADDRESS"):
             config[-1]["models"]["params"]["args"]["setup"][
                 "transfer_target_address"
-            ] = f"${{str:{os.getenv('TRANSFER_TARGET_ADDRESS')}}}"  # type: ignore        
+            ] = f"${{str:{os.getenv('TRANSFER_TARGET_ADDRESS')}}}"  # type: ignore     
+        
+        if os.getenv("CONTRACT_ADDRESS"):
+            config[-1]["models"]["params"]["args"]["setup"][
+                "contract_address"
+            ] = f"${{str:{os.getenv('CONTRACT_ADDRESS')}}}"  # type: ignore         
 
     with open(Path("learning_agent", "aea-config.yaml"), "w", encoding="utf-8") as file:
         yaml.dump_all(config, file, sort_keys=False)
