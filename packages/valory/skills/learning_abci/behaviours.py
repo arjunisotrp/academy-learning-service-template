@@ -18,9 +18,9 @@
 # ------------------------------------------------------------------------------
 
 """This package contains round behaviours of LearningAbciApp."""
-
+import json
 from abc import ABC
-from typing import Generator, Set, Type, cast
+from typing import Generator, List, Set, Type, cast
 
 from packages.valory.skills.abstract_round_abci.base import AbstractRound
 from packages.valory.skills.abstract_round_abci.behaviours import (
@@ -30,11 +30,15 @@ from packages.valory.skills.abstract_round_abci.behaviours import (
 from packages.valory.skills.learning_abci.models import Params, SharedState
 from packages.valory.skills.learning_abci.payloads import (
     APICheckPayload,
+    IPFSSendPayload,
+    IPFSGetPayload,
     DecisionMakingPayload,
     TxPreparationPayload,
 )
 from packages.valory.skills.learning_abci.rounds import (
     APICheckRound,
+    IPFSSendRound,
+    IPFSGetRound,
     DecisionMakingRound,
     Event,
     LearningAbciApp,
@@ -45,6 +49,13 @@ from packages.valory.protocols.contract_api import ContractApiMessage
 from packages.valory.contracts.erc20.contract import ERC20
 from packages.valory.contracts.gnosis_safe.contract import GnosisSafeContract
 from packages.valory.skills.transaction_settlement_abci.payload_tools import (hash_payload_to_hex,)
+from tempfile import mkdtemp
+import multibase
+import multicodec
+from packages.valory.skills.abstract_round_abci.io_.store import SupportedFiletype
+from aea.helpers.cid import to_v1
+from dataclasses import asdict, dataclass
+from pathlib import Path
 
 VAL_ETHER = 10**18
 HTTP_OK = 200
@@ -53,6 +64,8 @@ TX_DATA = b"0x"
 SAFE_GAS = 0
 VALUE_KEY = "value"
 TO_ADDRESS_KEY = "to_address"
+METADATA_FILENAME = "large.json"
+V1_HEX_PREFIX = "f01"
 
 
 class LearningBaseBehaviour(BaseBehaviour, ABC):  # pylint: disable=too-many-ancestors
@@ -72,6 +85,11 @@ class LearningBaseBehaviour(BaseBehaviour, ABC):  # pylint: disable=too-many-anc
     def local_state(self) -> SharedState:
         """Return the state."""
         return cast(SharedState, self.context.state)
+    
+    @property
+    def metadata_filepath(self) -> str:
+        """Get the filepath to the metadata."""
+        return str(Path(mkdtemp()) / METADATA_FILENAME)
 
 
 class APICheckBehaviour(LearningBaseBehaviour):  # pylint: disable=too-many-ancestors
@@ -117,13 +135,95 @@ class APICheckBehaviour(LearningBaseBehaviour):  # pylint: disable=too-many-ance
         if result.performative != ContractApiMessage.Performative.RAW_TRANSACTION:
             self.context.logger.error(f"{result}..error in getting balance")
             return False
-        wallet_balance = (result.raw_transaction.body.get("wallet",None))
-        token_balance = (result.raw_transaction.body.get("token",None))
+        wallet_balance = (result.raw_transaction.body.get("wallet",None))/10**18
+        token_balance = (result.raw_transaction.body.get("token",None))/10**8
 
         self.context.logger.info(f"wallet : {wallet_balance}, token: {token_balance}")
         balance = token_balance
         self.context.logger.info(f"Balance is {balance}")
         return balance
+
+class IPFSSendBehaviour(LearningBaseBehaviour):  # pylint: disable=too-many-ancestors
+    """IPFS Send Behaviour"""
+
+    matching_round: Type[AbstractRound] = IPFSSendRound
+
+    def async_act(self) -> Generator:
+        """Do the act, supporting asynchronous execution."""
+
+        with self.context.benchmark_tool.measure(self.behaviour_id).local():
+            sender = self.context.agent_address
+            metadata_hash = yield from self._send_large_metadata_to_ipfs()
+            payload = IPFSSendPayload(sender=sender,metadata_hash=metadata_hash)
+
+        with self.context.benchmark_tool.measure(self.behaviour_id).consensus():
+            yield from self.send_a2a_transaction(payload)
+            yield from self.wait_until_round_end()
+
+        self.set_done()
+
+    def _send_large_metadata_to_ipfs(self):
+        """Send large metadata to IPFS."""
+
+        @dataclass
+        class MetadataItems:
+            name: str
+            language: str
+            id: str
+            bio: str
+            version: str
+        
+        @dataclass
+        class MetaData:
+            mechRequests: List[MetadataItems]
+
+        with open('large.json', 'r') as file:
+            sample_data = json.load(file)
+        metadataItems = MetaData(**sample_data)
+
+        metadata_hash = yield from self.send_to_ipfs(
+            self.metadata_filepath, asdict(metadataItems), filetype=SupportedFiletype.JSON
+        )
+        self.context.logger.info(f"metadata uploaded, metadata hash: {metadata_hash}")
+        if metadata_hash is None:
+            return False
+
+        v1_file_hash = to_v1(metadata_hash)
+        cid_bytes = cast(bytes, multibase.decode(v1_file_hash))
+        multihash_bytes = multicodec.remove_prefix(cid_bytes)
+        v1_file_hash_hex = V1_HEX_PREFIX + multihash_bytes.hex()
+        #self.params.ipfs_address
+        ipfs_link = "https://gateway.autonolas.tech/ipfs/" + v1_file_hash_hex
+        self.context.logger.info(f"ipfs link: {ipfs_link}")
+        return metadata_hash
+
+class IPFSGetBehaviour(LearningBaseBehaviour):  # pylint: disable=too-many-ancestors
+    """IPFS Get Behaviour"""
+
+    matching_round: Type[AbstractRound] = IPFSGetRound
+
+    def async_act(self) -> Generator:
+        """Do the act, supporting asynchronous execution."""
+
+        with self.context.benchmark_tool.measure(self.behaviour_id).local():
+            sender = self.context.agent_address
+            metadata = yield from self._send_large_metadata_to_ipfs()
+            self.context.logger.info(f"metadata: {metadata}")
+            payload = IPFSGetPayload(sender=sender)
+
+        with self.context.benchmark_tool.measure(self.behaviour_id).consensus():
+            yield from self.send_a2a_transaction(payload)
+            yield from self.wait_until_round_end()
+
+        self.set_done()
+
+    def _send_large_metadata_to_ipfs(self):
+        """Get large metadata to IPFS."""   
+        metadata_data = yield from self.get_from_ipfs(  # type: ignore
+            self.synchronized_data.metadata_hash,
+            filetype=SupportedFiletype.JSON,
+        ) 
+        return metadata_data
 
 class DecisionMakingBehaviour(
     LearningBaseBehaviour
@@ -228,6 +328,8 @@ class LearningRoundBehaviour(AbstractRoundBehaviour):
     abci_app_cls = LearningAbciApp  # type: ignore
     behaviours: Set[Type[BaseBehaviour]] = [  # type: ignore
         APICheckBehaviour,
+        IPFSSendBehaviour,
+        IPFSGetBehaviour,
         DecisionMakingBehaviour,
         TxPreparationBehaviour,
     ]

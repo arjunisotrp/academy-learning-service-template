@@ -36,6 +36,8 @@ from packages.valory.skills.abstract_round_abci.base import (
 )
 from packages.valory.skills.learning_abci.payloads import (
     APICheckPayload,
+    IPFSSendPayload,
+    IPFSGetPayload,
     DecisionMakingPayload,
     TxPreparationPayload,
 )
@@ -92,6 +94,11 @@ class SynchronizedData(BaseSynchronizedData):
     def tx_submitter(self) -> str:
         """Get the round that submitted a tx to transaction_settlement_abci."""
         return str(self.db.get_strict("tx_submitter"))
+    
+    @property
+    def metadata_hash(self) -> str:
+        """multi send tx hash."""
+        return str(self.db.get_strict("metadata_hash"))
 
 
 class APICheckRound(CollectSameUntilThresholdRound):
@@ -107,6 +114,30 @@ class APICheckRound(CollectSameUntilThresholdRound):
         get_name(SynchronizedData.balance),
     )
 
+class IPFSSendRound(CollectSameUntilThresholdRound):
+    """IPFS Send Round"""
+
+    payload_class = IPFSSendPayload
+    synchronized_data_class = SynchronizedData
+    done_event = Event.DONE
+    no_majority_event = Event.NO_MAJORITY
+    collection_key = get_name(SynchronizedData.participant_to_price_round)
+    selection_key = (
+        get_name(SynchronizedData.metadata_hash),
+    )
+
+class IPFSGetRound(CollectSameUntilThresholdRound):
+    """IPFS Get Round"""
+
+    payload_class = IPFSGetPayload
+    synchronized_data_class = SynchronizedData
+    done_event = Event.DONE
+    none_event = Event.DONE
+    no_majority_event = Event.NO_MAJORITY
+    collection_key = get_name(SynchronizedData.participant_to_price_round)
+    selection_key = (
+        get_name(SynchronizedData.metadata_hash),
+    )
     # Event.ROUND_TIMEOUT  # this needs to be referenced for static checkers
 
 
@@ -168,6 +199,16 @@ class LearningAbciApp(AbciApp[Event]):
         APICheckRound: {
             Event.NO_MAJORITY: APICheckRound,
             Event.ROUND_TIMEOUT: APICheckRound,
+            Event.DONE: IPFSSendRound,
+        },
+        IPFSSendRound: {
+            Event.NO_MAJORITY: IPFSSendRound,
+            Event.ROUND_TIMEOUT: IPFSSendRound,
+            Event.DONE: IPFSGetRound,
+        },
+        IPFSGetRound: {
+            Event.NO_MAJORITY: IPFSGetRound,
+            Event.ROUND_TIMEOUT: IPFSGetRound,
             Event.DONE: DecisionMakingRound,
         },
         DecisionMakingRound: {

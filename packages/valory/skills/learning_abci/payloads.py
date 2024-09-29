@@ -24,7 +24,6 @@ from typing import Optional
 
 from packages.valory.skills.abstract_round_abci.base import BaseTxPayload
 
-
 @dataclass(frozen=True)
 class APICheckPayload(BaseTxPayload):
     """Represent a transaction payload for the APICheckRound."""
@@ -32,6 +31,15 @@ class APICheckPayload(BaseTxPayload):
     price: Optional[float]
     balance: Optional[float]
 
+@dataclass(frozen=True)
+class IPFSSendPayload(BaseTxPayload):
+    """Represent a transaction payload for the IPFS Send Payload."""
+
+    metadata_hash: Optional[str] = None
+
+@dataclass(frozen=True)
+class IPFSGetPayload(BaseTxPayload):
+    """Represent a transaction payload for the IPFS Send Payload."""
 
 @dataclass(frozen=True)
 class DecisionMakingPayload(BaseTxPayload):
