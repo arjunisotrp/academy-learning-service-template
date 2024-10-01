@@ -55,16 +55,27 @@ def main() -> None:
             config[-1]["models"]["params"]["args"]["setup"][
                 "safe_contract_address"
             ] = f"${{str:{os.getenv('SAFE_CONTRACT_ADDRESS')}}}"  # type: ignore
+        
+        if os.getenv("CONTRACT_TOKEN_ADDRESS"):
+            config[-1]["models"]["params"]["args"][
+                "contract_token_address"
+            ] = f"${{str:{os.getenv('CONTRACT_TOKEN_ADDRESS')}}}"    
 
         if os.getenv("TRANSFER_TARGET_ADDRESS"):
-            config[-1]["models"]["params"]["args"]["setup"][
+            config[-1]["models"]["params"]["args"][
                 "transfer_target_address"
-            ] = f"${{str:{os.getenv('TRANSFER_TARGET_ADDRESS')}}}"  # type: ignore     
-        
-        if os.getenv("CONTRACT_ADDRESS"):
-            config[-1]["models"]["params"]["args"]["setup"][
-                "contract_address"
-            ] = f"${{str:{os.getenv('CONTRACT_ADDRESS')}}}"  # type: ignore         
+            ] = f"${{str:{os.getenv('TRANSFER_TARGET_ADDRESS')}}}"  
+
+        if os.getenv("MULTISEND_CONTRACT_ADDRESS"):
+            config[-1]["models"]["params"]["args"][
+                "multisend_contract_address"
+            ] = f"${{str:{os.getenv('MULTISEND_CONTRACT_ADDRESS')}}}" 
+
+        if os.getenv("SUBGRAPH_API_ENDPOINT"):
+            config[-1]["models"]["params"]["args"][
+                "subgraph_api_endpoint"
+            ] = f"${{str:{os.getenv('SUBGRAPH_API_ENDPOINT')}}}"       
+
 
     with open(Path("learning_agent", "aea-config.yaml"), "w", encoding="utf-8") as file:
         yaml.dump_all(config, file, sort_keys=False)

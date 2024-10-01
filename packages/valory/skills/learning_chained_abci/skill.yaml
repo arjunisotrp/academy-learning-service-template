@@ -8,7 +8,7 @@ aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   __init__.py: bafybeihu5y5llhaefw32jodf2nc2x5tig7cfo2fallbodv6vodczunpbve
   behaviours.py: bafybeiagipms5gfebqysx5sl4dhydppceqv4aga64ibqgygqczbh4imyxu
-  composition.py: bafybeif4oiwvj6bzhmch6jvi4vbw3wglvirwyi7hriuddudrrw5uyglrcq
+  composition.py: bafybeihcy2fnz5lvhemkb66mngghm7dsq5o4luybldwr5mnehdswxks2ju
   dialogues.py: bafybeiakqfqcpg7yrxt4bsyernhy5p77tci4qhmgqqjqi3ttx7zk6sklca
   fsm_specification.yaml: bafybeiaj3iirt63vvmzqyohje3ho2q7l52exg3gsboft5pzl6xm7j4ki74
   handlers.py: bafybeicru4lanvektcppxpecul4zwjfuaxseopxtsxrfzmbfaz5qk4m67q
@@ -22,7 +22,7 @@ skills:
 - valory/registration_abci:0.1.0:bafybeicnth5q4httefsusywx3zrrq4al47owvge72dqf2fziruicq6hqta
 - valory/reset_pause_abci:0.1.0:bafybeievjciqdvxhqxfjd4whqs27h6qbxqzrae7wwj7fpvxlvmtw3x35im
 - valory/termination_abci:0.1.0:bafybeid54buqxipiuduw7b6nnliiwsxajnltseuroad53wukfonpxca2om
-- valory/learning_abci:0.1.0:bafybeia2casvb33su2zwvu4lx6xwrfun4ifjecjf27ysf3a2bub2nvexqu
+- valory/learning_abci:0.1.0:bafybeiayp4icc7llnwastfr4irkom5opycxhmtskgp2i7767jruiq4eiye
 - valory/transaction_settlement_abci:0.1.0:bafybeihq2yenstblmaadzcjousowj5kfn5l7ns5pxweq2gcrsczfyq5wzm
 behaviours:
   main:
@@ -138,7 +138,9 @@ models:
       coingecko_api_key: null
       default_chain_id: gnosis
       transfer_target_address: '0x0000000000000000000000000000000000000000'
-      contract_address: '0x0000000000000000000000000000000000000000'
+      contract_token_address: '0x0000000000000000000000000000000000000000'
+      multisend_contract_address: '0x0000000000000000000000000000000000000000'
+      subgraph_api_endpoint: https://gateway.thegraph.com/api
     class_name: Params
   randomness_api:
     args:

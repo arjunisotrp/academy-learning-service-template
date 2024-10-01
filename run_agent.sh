@@ -38,7 +38,6 @@ python scripts/aea-config-replace.py
 # Copy and add the keys and issue certificates
 cd learning_agent
 cp $PWD/../ethereum_private_key.txt .
-cp $PWD/../large.json .
 autonomy add-key ethereum ethereum_private_key.txt
 autonomy issue-certificates
 
