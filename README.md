@@ -1,30 +1,29 @@
 ## Learning Extended Service
 
 APICheckBehaviour:
- 	- Get ERC20 token balance by interacting with the ERC20 smart contract
+- Get ERC20 token balance by interacting with the ERC20 smart contract
 
 IPFSSendBehaviour:
-	- This task collects Subgraph json data by querying the subgraph on the decentralized network and 
-	- send the json data to IPFS using send_to_ipfs interface.
-	- Received metadata file hash is stored on synchronized data.
+- This task collects Subgraph json data by querying the subgraph on the decentralized network and 
+- send the json data to IPFS using send_to_ipfs interface.
+- Received metadata file hash is stored on synchronized data.
 
 IPFSGetBehaviour:
-	- This behaviour uses metadata file hash stored in synchronized data and prints the metadata.
+- This behaviour uses metadata file hash stored in synchronized data and prints the metadata.
 	
 DecisionMakingBehaviour:
-	- This use the balance from APICheck round and decides on making single transaction or multiple transaction 
-	based on some pre-defined value. 
+- This use the balance from APICheck round and decides on making single transaction or multiple transaction based on some pre-defined value. 
 
 TxPreparationBehaviour:
-	- Make single safe transaction. From safe wallet to another agent address of the 4 agents available.
-	- Convert the safe tx hash to format that is supported by transaction settlement abci and submit it.
+- Make single safe transaction. From safe wallet to another agent address of the 4 agents available.
+- Convert the safe tx hash to format that is supported by transaction settlement abci and submit it.
 
 MultiSendTxBehaviour:
-	- Make multiple safe transactions.
-		- 1. From safe to another agent address of the 4 agents available with the native xDAI tokens
-		- 2. From safe to another agent address of the 4 agents available with the custom ERC20 tokens 
-	- Append multiple txs as one and send to Multisend contract.
-	- Convert the safe tx hash to format that is supported by transaction settlement abci and submit it.
+- Make multiple safe transactions.
+	- 1. From safe to another agent address of the 4 agents available with the native xDAI tokens
+	- 2. From safe to another agent address of the 4 agents available with the custom ERC20 tokens 
+- Append multiple txs as one and send to Multisend contract.
+- Convert the safe tx hash to format that is supported by transaction settlement abci and submit it.
 
 ## System requirements
 
