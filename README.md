@@ -83,7 +83,9 @@ MultiSendTxBehaviour:
     cp sample.env .env
     ```
 
-7. Fill in the required environment variables in .env. These variables are: `ALL_PARTICIPANTS`, `GNOSIS_LEDGER_RPC`, `CONTRACT_TOKEN_ADDRESS`, `TRANSFER_TARGET_ADDRESS`, `MULTISEND_CONTRACT_ADDRESS`, `SUBGRAPH_API_ENDPOINT`,  and `SAFE_CONTRACT_ADDRESS`. You will need to get a API Key, subgraph id from [Subgraph](https://thegraph.com/explorer/subgraphs) and update SUBGRAPH_API_ENDPOINT(https://gateway.thegraph.com/api/{api_key}/subgraphs/id/{subgraph_id}). Set `GNOSIS_LEDGER_RPC` to your Tenderly fork Admin RPC.
+7. Fill in the required environment variables in .env. These variables are: `ALL_PARTICIPANTS`, `GNOSIS_LEDGER_RPC`, `CONTRACT_TOKEN_ADDRESS`, `TRANSFER_TARGET_ADDRESS`, `MULTISEND_CONTRACT_ADDRESS`, `SUBGRAPH_API_ENDPOINT`,  and `SAFE_CONTRACT_ADDRESS`.
+
+8. You will need to get a API Key, subgraph id from [Subgraph](https://thegraph.com/explorer) and update SUBGRAPH_API_ENDPOINT(https://gateway.thegraph.com/api/{api_key}/subgraphs/id/{subgraph_id}).  Set `GNOSIS_LEDGER_RPC` to your Tenderly fork Admin RPC.
 
 ### Run a single agent
 
